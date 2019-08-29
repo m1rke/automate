@@ -62,8 +62,8 @@ public class serapionBuild : EditorWindow {
 
         commit = ("New release! Version: " + PlayerSettings.bundleVersion + "-"  + DateTime.Now.ToString("dd/MM/yyyy"));
         repoUrl = "https://gitlab.com/serapion/kennig";
-        git = "git";
-        gitAdd = @"add -A";
+        git = "cmd";
+        gitAdd = @"git add -A";
         gitCommit = (@"commit -m" + commit);
         gitPush = @"push";
         path =  Directory.GetCurrentDirectory();
@@ -94,18 +94,7 @@ public class serapionBuild : EditorWindow {
             if( buildIOS){
                  PlayerSettings.bundleVersion = iosVersion;
                  PlayerSettings.iOS.buildNumber = iosBuildNum;
-                using (System.Diagnostics.Process myProcess = new System.Diagnostics.Process())
-                {
-                    myProcess.StartInfo.UseShellExecute = false;
-                    // You can start any process, HelloWorld is a do-nothing example.
-                    myProcess.StartInfo.FileName = @"git-cmd";
-                    myProcess.StartInfo.CreateNoWindow = true;
-                    myProcess.Start();
-                    // This code assumes the process you are starting will terminate itself. 
-                    // Given that is is started without a window so you cannot terminate it 
-                    // on the desktop, it must terminate itself or you can do it programmatically
-                    // from this application using the Kill method.
-                }
+                 System.Diagnostics.Process.Start(git, gitAdd);
                 Debug.Log("Sucessfully builded IOS Application. Version: " + PlayerSettings.bundleVersion);
             }
             if( buildAndroid){
