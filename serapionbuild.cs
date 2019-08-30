@@ -3,10 +3,11 @@ using UnityEditor;
 using System;
 using System.IO;
 using System.Globalization;
+using System.Diagnostics;
 
-
-public class serapionBuild : EditorWindow {
-
+public class serapionBuild : EditorWindow
+{
+    
     string androidVersion;
     string lastAndroidVersion;
     int androidBuildNum;
@@ -29,83 +30,89 @@ public class serapionBuild : EditorWindow {
     string commit;
     string repoUrl;
     string path;
-
-
-
-	[MenuItem("Serapion Build/BUILD")]
-	public static void ShowWindow ()
-	{
-		GetWindow<serapionBuild>("SERAPION AUTOMATION");
-	}
-
-	void OnGUI ()
-	{
-		GUILayout.Label("App Information", EditorStyles.boldLabel);
-
-        if (!changed) {
-
+    
+    
+    
+    [MenuItem("Serapion Build/BUILD")]
+    public static void ShowWindow()
+    {
+        GetWindow<serapionBuild>("SERAPION AUTOMATION");
+    }
+    
+    void OnGUI()
+    {
+        GUILayout.Label("App Information", EditorStyles.boldLabel);
+        
+        if (!changed)
+        {
+            
             androidVersion = PlayerSettings.bundleVersion;
             lastAndroidVersion = androidVersion;
-            androidBuildNum = PlayerSettings.Android.bundleVersionCode; 
+            androidBuildNum = PlayerSettings.Android.bundleVersionCode;
             iosVersion = PlayerSettings.bundleVersion;
             lastIosVersion = iosVersion;
             iosBuildNum = PlayerSettings.iOS.buildNumber;
             
         }
-
+        
         androidVersion = EditorGUILayout.TextField("Android Version", androidVersion);
         androidBuildNum = int.Parse(EditorGUILayout.TextField("Android Build Number", androidBuildNum.ToString()).ToString());
         iosVersion = EditorGUILayout.TextField("IOS Version", iosVersion);
         iosBuildNum = EditorGUILayout.TextField("IOS Build Number", iosBuildNum);
-
+        
         GUILayout.Label("GIT Information", EditorStyles.boldLabel);
-
-        commit = ("New release! Version: " + PlayerSettings.bundleVersion + "-"  + DateTime.Now.ToString("dd/MM/yyyy"));
+        
+        commit = ("New release! Version: " + PlayerSettings.bundleVersion + "-" + DateTime.Now.ToString("dd/MM/yyyy"));
         repoUrl = "https://gitlab.com/serapion/kennig";
-        git = "cmd";
-        gitAdd = @"git add -A";
-        gitCommit = (@"commit -m" + commit);
-        gitPush = @"push";
-        path =  Directory.GetCurrentDirectory();
-
+        git = "git";
+        gitAdd = @"/K add -A";
+        gitCommit = (@"/K commit -m" + commit);
+        gitPush = @"/K push";
+        path = Directory.GetCurrentDirectory();
+        
         gitUser = EditorGUILayout.TextField("Username", gitUser);
         gitPass = EditorGUILayout.TextField("Password", gitPass);
         commit = EditorGUILayout.TextField("Commit", commit);
         repoUrl = EditorGUILayout.TextField("Repository", repoUrl);
-
         
-    
-        GUILayout.Label("Check platform to build", EditorStyles.boldLabel);    
+        
+        
+        GUILayout.Label("Check platform to build", EditorStyles.boldLabel);
         buildAndroid = EditorGUILayout.Toggle("Android", buildAndroid);
         buildIOS = EditorGUILayout.Toggle("IOS", buildIOS);
-        if(lastAndroidVersion != androidVersion)
+        if (lastAndroidVersion != androidVersion)
         {
             changed = true;
         }
-    
-        if(lastIosVersion != iosVersion)
+        
+        if (lastIosVersion != iosVersion)
         {
             changed = true;
         }
-
+        
         GUI.enabled = buildAndroid || buildIOS;
-        if(GUILayout.Button("Build and Deploy"))
+        if (GUILayout.Button("Build and Deploy"))
         {
-            if( buildIOS){
-                 PlayerSettings.bundleVersion = iosVersion;
-                 PlayerSettings.iOS.buildNumber = iosBuildNum;
-                 System.Diagnostics.Process.Start(git, gitAdd);
-                Debug.Log("Sucessfully builded IOS Application. Version: " + PlayerSettings.bundleVersion);
+            if (buildIOS)
+            {
+                PlayerSettings.bundleVersion = iosVersion;
+                PlayerSettings.iOS.buildNumber = iosBuildNum;
+                string[] args = { gitAdd, gitCommit, gitPush };
+                System.Diagnostics.Process.Start(git, string.Join(" ", args)).WaitForExit();
+                //System.Diagnostics.Process.Start(git, gitCommit).WaitForExit();
+                // System.Diagnostics.Process.Start(git, gitPush).WaitForExit();
+                UnityEngine.Debug.Log("Sucessfully builded IOS Application. Version: " + PlayerSettings.bundleVersion);
             }
-            if( buildAndroid){
-                 PlayerSettings.bundleVersion = androidVersion;
+            if (buildAndroid)
+            {
+                PlayerSettings.bundleVersion = androidVersion;
                 PlayerSettings.Android.bundleVersionCode = androidBuildNum;
-                Debug.Log("Sucessfully builded Android Application. Version: " + PlayerSettings.bundleVersion);
+                UnityEngine.Debug.Log("Sucessfully builded Android Application. Version: " + PlayerSettings.bundleVersion);
             }
         }
-         GUI.enabled = true;
-                    
-	}
-
-
+        GUI.enabled = true;
+        
+    }
+    
+    
 }
